@@ -164,8 +164,12 @@ class MissionNode(BaseNode):
             pass  # Image already removed
 
     def has_debug_data(self):
-        return hasattr(self, "_image") and self._image is not None and \
-            hasattr(self, "_supervision_mask") and self._supervision_mask is not None
+        return (
+            hasattr(self, "_image")
+            and self._image is not None
+            and hasattr(self, "_supervision_mask")
+            and self._supervision_mask is not None
+        )
 
     def change_device(self, device):
         """Changes the device of all the class members

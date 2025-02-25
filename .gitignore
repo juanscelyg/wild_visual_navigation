@@ -148,3 +148,5 @@ dmypy.json
 .pyre/
 assets/virtual_env/*
 
+# Rosbags
+*.bag

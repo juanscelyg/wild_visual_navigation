@@ -1,0 +1,10 @@
+<launch>
+  <arg name="path" default="/root/catkin_ws/src/wild_visual_navigation/assets" />
+  <arg name="file_1" default="forest_2_light" />
+
+  <node pkg="rosbag" type="play" name="player" output="screen" args="--clock $(arg path)/$(arg file_1).bag">
+    <remap from="/sensor/camera/left/camera_info" to="/depth_camera/color/camera_info"/>
+    <remap from="/sensor/camera/left/image_rect_color" to="/depth_camera/color/image_raw"/>
+  </node>
+
+</launch>

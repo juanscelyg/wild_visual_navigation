@@ -45,8 +45,16 @@ class ImageProjector:
         new_h = self.height.item() if new_h is None else new_h
 
         # Compute scale
-        sy = new_h / h
-        sx = (new_w / w) if (new_w is not None) else sy
+        try:
+            sy = new_h / h
+        except ZeroDivisionError:
+            sy = 1.0
+
+        try:
+            sx = new_w / w
+        except ZeroDivisionError:
+            sx = 1.0
+        sx if (new_w is not None) else sy
 
         # Compute scaled parameters
         sh = new_h

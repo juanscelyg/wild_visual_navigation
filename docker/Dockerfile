@@ -115,6 +115,7 @@ RUN mkdir -p /root/catkin_ws/src \
     && cd /root/catkin_ws && catkin build \
     && apt-get update \
     && apt-get install -y \
+        ros-noetic-rqt-multiplot \
         ros-noetic-jackal-simulator \
         ros-noetic-jackal-desktop \
         ros-noetic-teleop-twist-keyboard \

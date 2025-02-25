@@ -115,7 +115,8 @@ class SupervisionGenerator:
 
         # Note: The way we use the sigmoid is a bit hacky
         # We use negative argument to revert sigmoid (smaller errors -> 1.0) and stretch the errors
-        self._traversability = torch.sigmoid(-(self._sigmoid_slope * (error - self._sigmoid_cutoff)))
+        # self._traversability = torch.sigmoid(-(self._sigmoid_slope * (error - self._sigmoid_cutoff)))
+        self._traversability = torch.sigmoid(-(self._sigmoid_slope * (0*error - self._sigmoid_cutoff)))
         self._traversability_var = torch.tensor([1.0]).to(
             self._traversability.device
         )  # This needs to be improved, the KF can help

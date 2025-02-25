@@ -230,24 +230,25 @@ class WvnLearning:
             self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
             # Robot state callback
-            robot_state_sub = message_filters.Subscriber(self._ros_params.robot_state_topic, RobotState)
-            cache1 = message_filters.Cache(robot_state_sub, 10)  # noqa: F841
-            desired_twist_sub = message_filters.Subscriber(self._ros_params.desired_twist_topic, TwistStamped)
-            cache2 = message_filters.Cache(desired_twist_sub, 10)  # noqa: F841
+            # robot_state_sub = message_filters.Subscriber(self._ros_params.robot_state_topic, RobotState)
+            # cache1 = message_filters.Cache(robot_state_sub, 10)  # noqa: F841
+            # desired_twist_sub = message_filters.Subscriber(self._ros_params.desired_twist_topic, TwistStamped)
+            # cache2 = message_filters.Cache(desired_twist_sub, 10)  # noqa: F841
 
-            self._robot_state_sub = message_filters.ApproximateTimeSynchronizer(
-                [robot_state_sub, desired_twist_sub], queue_size=10, slop=0.5
-            )
+            # self._robot_state_sub = message_filters.ApproximateTimeSynchronizer(
+            #     [robot_state_sub, desired_twist_sub], queue_size=10, slop=0.5
+            # )
 
-            rospy.loginfo(
-                f"[{self._node_name}] Start waiting for RobotState topic {self._ros_params.robot_state_topic} being published!"
-            )
-            rospy.wait_for_message(self._ros_params.robot_state_topic, RobotState)
-            rospy.loginfo(
-                f"[{self._node_name}] Start waiting for TwistStamped topic {self._ros_params.desired_twist_topic} being published!"
-            )
-            rospy.wait_for_message(self._ros_params.desired_twist_topic, TwistStamped)
-            self._robot_state_sub.registerCallback(self.robot_state_callback)
+            # rospy.loginfo(
+            #     f"[{self._node_name}] Start waiting for RobotState topic {self._ros_params.robot_state_topic} being published!"
+            # )
+            # rospy.wait_for_message(self._ros_params.robot_state_topic, RobotState)
+            # rospy.loginfo(
+            #     f"[{self._node_name}] Start waiting for TwistStamped topic {self._ros_params.desired_twist_topic} being published!"
+            # )
+            # rospy.wait_for_message(self._ros_params.desired_twist_topic, TwistStamped)
+            # self._robot_state_sub.registerCallback(self.robot_state_callback)
+            
 
             self._camera_handler = {}
             # Image callback
@@ -292,6 +293,10 @@ class WvnLearning:
                     )
                     sync.registerCallback(self.imagefeat_callback, self._ros_params.camera_topics[cam])
 
+            self._robot_state_sub = message_filters.ApproximateTimeSynchronizer(
+                        [imagefeat_sub, info_sub], queue_size=4, slop=0.5
+                    )
+            self._robot_state_sub.registerCallback(self.robot_state_callback)
             # Wait for features message to determine the input size of the model
             cam = list(self._ros_params.camera_topics.keys())[0]
 
@@ -433,13 +438,19 @@ class WvnLearning:
         self._learning_thread_stop_event.clear()
 
     @accumulate_time
-    def robot_state_callback(self, state_msg, desired_twist_msg: TwistStamped):
+    def robot_state_callback(self, ImageFeatures, CameraInfo):
         """Main callback to process supervision info (robot state)
 
         Args:
             state_msg (wild_visual_navigation_msgs/RobotState): Robot state message
             desired_twist_msg (geometry_msgs/TwistStamped): Desired twist message
         """
+        state_msg = RobotState()
+        desired_twist_msg = TwistStamped()
+        state_msg.header.stamp = CameraInfo.header.stamp
+        desired_twist_msg.header.stamp = CameraInfo.header.stamp
+        state_msg.header.frame_id = CameraInfo.header.frame_id
+        desired_twist_msg.header.frame_id = CameraInfo.header.frame_id
         if not self._setup_ready:
             return
 

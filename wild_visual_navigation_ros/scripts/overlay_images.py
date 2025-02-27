@@ -27,8 +27,10 @@ class ImageOverlayNode:
 
     def callback(self, image_msg, trav_msgs):
         torch_image = rc.ros_image_to_torch(image_msg, device="cpu")
-        torch_trav = rc.ros_image_to_torch(trav_msgs, device="cpu", desired_encoding="passthrough")
-        img_out = self._visualizer.plot_detectron_classification(torch_image, torch_trav.clip(0, 1))
+        torch_trav = rc.ros_image_to_torch(trav_msgs, device="cpu", desired_encoding="passthrough") 
+        rospy.loginfo(self.image_pub_topic)
+        save = (self.image_pub_topic == '/wild_visual_navigation_visu_traversability_front/traversability_overlayed')
+        img_out = self._visualizer.plot_detectron_classification(torch_image, torch_trav.clip(0, 1), save=True)
         ros_msg = rc.numpy_to_ros_image(img_out)
         ros_msg.header.stamp = image_msg.header.stamp
         self._pub.publish(ros_msg)

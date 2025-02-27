@@ -16,6 +16,7 @@ import pytorch_lightning as pl
 from typing import Optional
 import matplotlib.pyplot as plt
 import matplotlib
+import rospy
 
 matplotlib.use("Agg")
 
@@ -370,6 +371,7 @@ class LearningVisualizer:
         img,
         seg,
         alpha=0.5,
+        save=False,
         overlay_mask=None,
         **kwargs,
     ):
@@ -394,11 +396,11 @@ class LearningVisualizer:
 
         # plt.hist(seg_img.ravel(), bins=500)
         # # Get current ros time
-        # now = rospy.Time.now()
+        now = rospy.Time.now()
         # # Create a unique filename
-        # filename = f"{now.secs}_{now.nsecs}.png"
+        filename = f"{now.secs}_{now.nsecs}.png"
         # # Save the figure
-        # plt.savefig(f"/home/rschmid/overlays/{filename}")
+        # plt.savefig(f"/tmp/overlays/{filename}")
         # # Close the figure
         # plt.close()
 
@@ -409,6 +411,8 @@ class LearningVisualizer:
         fore = np.zeros((H, W, 4))
         fore[:, :, :3] = seg_img
         fore[:, :, 3] = alpha * 255
+        if save:
+            plt.imsave(f"/root/catkin_ws/src/wild_visual_navigation/data/overlays/{filename}", seg_img)
         if overlay_mask is not None:
             try:
                 overlay_mask = overlay_mask.cpu().numpy()

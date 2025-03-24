@@ -24,5 +24,6 @@
   </node>
 
   <!-- Nice visualization overlay for front image only-->
-  <include if="$(arg overlay_images)" file="$(find wild_visual_navigation_ros)/launch/overlay_images.launch"/> 
+  <include if="$(arg overlay_images)" file="$(find wild_visual_navigation_ros)/launch/overlay_images.launch">
+  </include> 
 </launch>

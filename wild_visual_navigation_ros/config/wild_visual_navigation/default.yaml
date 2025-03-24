@@ -55,3 +55,5 @@ log_time: false
 log_confidence: false
 verbose: true
 extraction_store_folder:  "nan"
+
+use_sim_time: false

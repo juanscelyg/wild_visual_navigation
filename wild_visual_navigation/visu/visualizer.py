@@ -17,6 +17,7 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import matplotlib
 import rospy
+from rosgraph_msgs.msg import Clock
 
 matplotlib.use("Agg")
 
@@ -44,11 +45,15 @@ class LearningVisualizer:
         self._store = store
         self._log = log
         self._c_maps = {"RdYlBu": np.array([np.uint8(np.array(c) * 255) for c in sns.color_palette("RdYlBu", 256)])}
+        self._clock_sub = rospy.Subscriber("/clock", Clock, self._clock_cb)
         if not (p_visu is None):
             if not os.path.exists(self._p_visu):
                 os.makedirs(self._p_visu)
         else:
             self._store = False
+
+    def _clock_cb(self, msg):
+        self._time = msg.clock
 
     @property
     def epoch(self) -> int:
@@ -396,9 +401,9 @@ class LearningVisualizer:
 
         # plt.hist(seg_img.ravel(), bins=500)
         # # Get current ros time
-        now = rospy.Time.now()
+        # rospy.loginfo(f"Time: {self._time.secs}")
         # # Create a unique filename
-        filename = f"{now.secs}_{now.nsecs}.png"
+        filename = f"{self._time.secs}_{self._time.nsecs}.png"
         # # Save the figure
         # plt.savefig(f"/tmp/overlays/{filename}")
         # # Close the figure

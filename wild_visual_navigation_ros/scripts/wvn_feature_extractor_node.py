@@ -14,6 +14,8 @@ from wild_visual_navigation_ros.reload_rosparams import reload_rosparams
 from wild_visual_navigation.model import get_model
 from wild_visual_navigation.utils import ConfidenceGenerator
 from wild_visual_navigation.utils import AnomalyLoss
+import matplotlib.pyplot as plt
+import matplotlib
 
 import rospy
 from sensor_msgs.msg import Image, CameraInfo, CompressedImage
@@ -182,7 +184,7 @@ class WvnFeatureExtractor:
                     CompressedImage,
                     self.image_callback,
                     callback_args=cam,
-                    queue_size=1,
+                    queue_size=10,
                 )
             else:
                 image_sub = rospy.Subscriber(
@@ -190,7 +192,7 @@ class WvnFeatureExtractor:
                     Image,
                     self.image_callback,
                     callback_args=cam,
-                    queue_size=1,
+                    queue_size=10,
                 )
             self._camera_handler[cam]["image_sub"] = image_sub
 
@@ -198,12 +200,12 @@ class WvnFeatureExtractor:
             trav_pub = rospy.Publisher(
                 f"/wild_visual_navigation_node/{cam}/traversability",
                 Image,
-                queue_size=1,
+                queue_size=10,
             )
             info_pub = rospy.Publisher(
                 f"/wild_visual_navigation_node/{cam}/camera_info",
                 CameraInfo,
-                queue_size=1,
+                queue_size=10,
             )
             self._camera_handler[cam]["trav_pub"] = trav_pub
             self._camera_handler[cam]["info_pub"] = info_pub
@@ -215,7 +217,7 @@ class WvnFeatureExtractor:
                 input_pub = rospy.Publisher(
                     f"/wild_visual_navigation_node/{cam}/image_input",
                     Image,
-                    queue_size=1,
+                    queue_size=100,
                 )
                 self._camera_handler[cam]["input_pub"] = input_pub
 
@@ -223,7 +225,7 @@ class WvnFeatureExtractor:
                 conf_pub = rospy.Publisher(
                     f"/wild_visual_navigation_node/{cam}/confidence",
                     Image,
-                    queue_size=1,
+                    queue_size=10,
                 )
                 self._camera_handler[cam]["conf_pub"] = conf_pub
 
@@ -231,7 +233,7 @@ class WvnFeatureExtractor:
                 imagefeat_pub = rospy.Publisher(
                     f"/wild_visual_navigation_node/{cam}/feat",
                     ImageFeatures,
-                    queue_size=1,
+                    queue_size=10,
                 )
                 self._camera_handler[cam]["imagefeat_pub"] = imagefeat_pub
 
@@ -281,8 +283,8 @@ class WvnFeatureExtractor:
         """
         # Check the rate
         ts = image_msg.header.stamp.to_sec()
-        if abs(ts - self._last_image_ts[cam]) < 1.0 / self._ros_params.image_callback_rate:
-            return
+        # if abs(ts - self._last_image_ts[cam]) < 1.0 / self._ros_params.image_callback_rate:
+        #     return
 
         # Check the scheduler
         if self._camera_scheduler.get() != cam:
@@ -337,6 +339,8 @@ class WvnFeatureExtractor:
                 trav = confidence
                 out_trav = trav.reshape(H, W, -1)[:, :, 0]
 
+            # filename = f"{image_msg.header.stamp.secs}_{image_msg.header.stamp.nsecs}.png"
+            # plt.imsave(f"/root/catkin_ws/src/wild_visual_navigation/data/overlays/{filename}", out_trav.cpu().numpy())
             msg = rc.numpy_to_ros_image(out_trav.cpu().numpy(), "passthrough")
             msg.header = image_msg.header
             msg.width = out_trav.shape[0]

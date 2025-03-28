@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import rospy
 from rosgraph_msgs.msg import Clock
+from sensor_msgs.msg import Image as im 
 
 matplotlib.use("Agg")
 
@@ -54,6 +55,7 @@ class LearningVisualizer:
 
     def _clock_cb(self, msg):
         self._time = msg.clock
+        #rospy.loginfo(self._time)
 
     @property
     def epoch(self) -> int:
@@ -378,6 +380,7 @@ class LearningVisualizer:
         alpha=0.5,
         save=False,
         overlay_mask=None,
+        time_stamp=None,
         **kwargs,
     ):
         if kwargs.get("cmap", None):
@@ -401,9 +404,10 @@ class LearningVisualizer:
 
         # plt.hist(seg_img.ravel(), bins=500)
         # # Get current ros time
-        # rospy.loginfo(f"Time: {self._time.secs}")
+        # self._time = rospy.Time.now()
+        # rospy.loginfo(self._time)
         # # Create a unique filename
-        filename = f"{self._time.secs}_{self._time.nsecs}.png"
+        filename = f"{time_stamp.secs}_{time_stamp.nsecs}.png"
         # # Save the figure
         # plt.savefig(f"/tmp/overlays/{filename}")
         # # Close the figure

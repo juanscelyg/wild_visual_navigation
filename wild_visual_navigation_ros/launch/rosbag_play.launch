@@ -3,9 +3,11 @@
   <arg name="file_1" default="forest_2_light" />
   <arg name="use_sim_time" default="false" />
 
-  <node pkg="rosbag" type="play" name="player" output="screen" args="--clock $(arg path)/$(arg file_1).bag">
+  <node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.5 $(arg path)/$(arg file_1).bag">
     <remap from="/sensor/camera/left/camera_info" to="/depth_camera/color/camera_info"/>
     <remap from="/sensor/camera/left/image_rect_color" to="/depth_camera/color/image_raw"/>
+    <!-- <remap from="/sensor/camera/left/camera_info" to="/wide_angle_camera_front_resize/camera_info"/>
+    <remap from="/sensor/camera/left/image_rect_color" to="/wide_angle_camera_front/image_color_rect_resize"/> -->
     <param name="use_sim_time" value="$(arg use_sim_time)" />
   </node>
 

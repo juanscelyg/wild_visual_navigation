@@ -22,7 +22,7 @@ class ImageOverlayNode:
 
         image_sub = message_filters.Subscriber(self.image_sub_topic, Image)
         trav_sub = message_filters.Subscriber(self.value_sub_topic, Image)
-        sync = message_filters.ApproximateTimeSynchronizer([image_sub, trav_sub], queue_size=2, slop=0.5)
+        sync = message_filters.ApproximateTimeSynchronizer([image_sub, trav_sub], queue_size=10, slop=0.5)
         sync.registerCallback(self.callback)
 
     def callback(self, image_msg, trav_msgs):
@@ -30,7 +30,7 @@ class ImageOverlayNode:
         torch_trav = rc.ros_image_to_torch(trav_msgs, device="cpu", desired_encoding="passthrough") 
         rospy.loginfo(self.image_pub_topic)
         save = (self.image_pub_topic == '/wild_visual_navigation_visu_traversability_front/traversability_overlayed')
-        img_out = self._visualizer.plot_detectron_classification(torch_image, torch_trav.clip(0, 1), save=True)
+        img_out = self._visualizer.plot_detectron_classification(torch_image, torch_trav.clip(0, 1), save=True, time_stamp = image_msg.header.stamp)
         ros_msg = rc.numpy_to_ros_image(img_out)
         ros_msg.header.stamp = image_msg.header.stamp
         self._pub.publish(ros_msg)

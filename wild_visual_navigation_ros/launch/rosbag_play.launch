@@ -1,6 +1,9 @@
 <launch>
   <arg name="path" default="/root/catkin_ws/src/wild_visual_navigation/assets" />
-  <arg name="file_1" default="forest_2_light" />
+  <!-- <arg name="file_1" default="forest_2_light" /> -->
+  <!-- <arg name="file_1" default="hill_1_light" /> -->
+  <!-- <arg name="file_1" default="lake_2_light" /> -->
+  <arg name="file_1" default="park_2_light" />
   <arg name="use_sim_time" default="false" />
 
   <node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.5 $(arg path)/$(arg file_1).bag">

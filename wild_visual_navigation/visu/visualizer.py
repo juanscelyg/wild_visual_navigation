@@ -7,7 +7,7 @@
 
 import os
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from matplotlib import cm
 import torch
 import skimage
@@ -19,6 +19,8 @@ import matplotlib
 import rospy
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import Image as im 
+import torchvision.transforms as transforms
+TO_PIL_IMAGE = transforms.ToPILImage()
 
 matplotlib.use("Agg")
 
@@ -383,18 +385,24 @@ class LearningVisualizer:
         time_stamp=None,
         **kwargs,
     ):
+        # filename = f"{time_stamp.secs}_{time_stamp.nsecs}.png"
+        # my_seg = (seg * 255).type(torch.long).clip(0, 255)
+        # np_img = np.array(TO_PIL_IMAGE(my_seg.flatten()))
+        # umbral = skimage.filters.threshold_otsu(np_img)
+        # binaria = np_img > umbral
+        # plt.imsave(f"/root/catkin_ws/src/wild_visual_navigation/data/overlays/{filename}", np_img)
         if kwargs.get("cmap", None):
             cmap = kwargs["cmap"]
         else:
-            s = 0.3  # If bigger, get more fine-grained green, if smaller get more fine-grained red
-            cmap = cm.get_cmap("RdYlBu", 256)  # or RdYlGn
+            s = 0.1  # If bigger, get more fine-grained green, if smaller get more fine-grained red
+            cmap = cm.get_cmap("gray", 256)  # or RdYlGn
             cmap = np.concatenate(
                 [cmap(np.linspace(0, s, 128)), cmap(np.linspace(1 - s, 1.0, 128))]
             )  # Stretch the colormap
             cmap = torch.from_numpy(cmap).to(seg)[:, :3]
 
         img = self.plot_image(img, not_log=True)
-        seg_img = self.plot_segmentation(
+        seg_img, sf = self.plot_segmentation(
             (seg * 255).type(torch.long).clip(0, 255),
             max_seg=256,
             colormap=cmap,
@@ -405,9 +413,8 @@ class LearningVisualizer:
         # plt.hist(seg_img.ravel(), bins=500)
         # # Get current ros time
         # self._time = rospy.Time.now()
-        # rospy.loginfo(self._time)
         # # Create a unique filename
-        filename = f"{time_stamp.secs}_{time_stamp.nsecs}.png"
+        
         # # Save the figure
         # plt.savefig(f"/tmp/overlays/{filename}")
         # # Close the figure
@@ -420,8 +427,12 @@ class LearningVisualizer:
         fore = np.zeros((H, W, 4))
         fore[:, :, :3] = seg_img
         fore[:, :, 3] = alpha * 255
+        output_img = np.array(Image.fromarray(seg_img).convert("L"))
+        img_bool = (output_img > 127) * 255
         if save:
-            plt.imsave(f"/root/catkin_ws/src/wild_visual_navigation/data/overlays/{filename}", seg_img)
+            filename = f"{time_stamp.secs}_{time_stamp.nsecs}.png"
+            Image.fromarray(np.uint8(img_bool)).save(f'/root/catkin_ws/src/wild_visual_navigation/data/overlays/{filename}')
+            #plt.imsave(f"/root/catkin_ws/src/wild_visual_navigation/data/overlays/{filename}",  output_img) 
         if overlay_mask is not None:
             try:
                 overlay_mask = overlay_mask.cpu().numpy()
@@ -502,7 +513,7 @@ class LearningVisualizer:
         self,
         seg,
         max_seg=40,
-        colormap="Set2",
+        colormap="binary",
         **kwargs,
     ):
         # c_map either a string of a color or a tensor where the shape aligns with max_seg given. should be on same device as seg
@@ -522,7 +533,7 @@ class LearningVisualizer:
         out_img = out_img.reshape(-1, 3)
 
         out_img = c_map[sf]
-        return out_img.reshape(H, W, 3).cpu().numpy()
+        return out_img.reshape(H, W, 3).cpu().numpy(), sf.reshape(H, W, 1).cpu().numpy()
 
     @accumulate_time
     @image_functionality
